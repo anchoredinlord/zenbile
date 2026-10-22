@@ -19,6 +19,7 @@ from app.db.base import Base
 from app.core.config import settings
 import app.models.user  # noqa: F401
 import app.models.shop  # noqa: F401
+import app.models.product  # noqa: F401
 
 # Tell Alembic about our database URL from .env
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)

@@ -89,6 +89,7 @@ def root():
 # ── Routers ────────────────────────────────────────────────────────────────
 from app.api.v1.endpoints import auth as auth_router
 from app.api.v1.endpoints import sellers as sellers_router
+from app.api.v1.endpoints import products as products_router
 
 app.include_router(
     auth_router.router,
@@ -99,4 +100,9 @@ app.include_router(
     sellers_router.router,
     prefix="/api/v1/sellers",
     tags=["Sellers & Shops"],
+)
+app.include_router(
+    products_router.router,
+    prefix="/api/v1/products",
+    tags=["Products & Categories"],
 )
