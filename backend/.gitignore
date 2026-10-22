@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Environment variables — NEVER commit these
+.env
+*.env
+
+# Alembic
+# (keep alembic.ini and versions/ in git, but not the compiled cache)
+
+# Uploads — product images should not be in git
+uploads/
+
+# pytest
+.pytest_cache/
+htmlcov/
+.coverage
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Distribution
+dist/
+build/
+*.egg-info/
