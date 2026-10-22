@@ -65,6 +65,12 @@ export default function Navbar() {
                     Dashboard
                   </Link>
                 )}
+                {!isSeller && !isAdmin && (
+                  <Link to="/orders"
+                    className="text-sm text-gray-600 hover:text-primary-500 hidden sm:block">
+                    Orders
+                  </Link>
+                )}
                 {isAdmin && (
                   <Link to="/admin"
                     className="text-sm text-gray-600 hover:text-primary-500 hidden sm:block">

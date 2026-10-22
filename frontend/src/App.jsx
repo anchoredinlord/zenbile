@@ -14,6 +14,8 @@ import RegisterPage         from './pages/RegisterPage'
 import SellerRegisterPage   from './pages/SellerRegisterPage'
 import SellerDashboardPage  from './pages/SellerDashboardPage'
 import AddProductPage       from './pages/AddProductPage'
+import OrdersPage           from './pages/OrdersPage'
+import AdminDashboardPage  from './pages/AdminDashboardPage'
 
 // Route guards
 function RequireAuth({ children }) {
@@ -30,7 +32,13 @@ function RequireSeller({ children }) {
   return children
 }
 
-export default function App() {
+function RequireAdmin({ children }) {
+  const { isLoggedIn, isAdmin, loading } = useAuth()
+  if (loading) return null
+  if (!isLoggedIn) return <Navigate to="/login" replace />
+  if (!isAdmin) return <Navigate to="/" replace />
+  return children
+}
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -47,6 +55,7 @@ export default function App() {
           {/* Requires login */}
           <Route path="/cart"     element={<RequireAuth><CartPage /></RequireAuth>} />
           <Route path="/checkout" element={<RequireAuth><CheckoutPage /></RequireAuth>} />
+          <Route path="/orders" element={<RequireAuth><OrdersPage /></RequireAuth>} />
           <Route path="/orders/:reference" element={<RequireAuth><OrderConfirmationPage /></RequireAuth>} />
 
           {/* Seller only */}
@@ -56,6 +65,10 @@ export default function App() {
             element={<RequireSeller><AddProductPage /></RequireSeller>} />
           <Route path="/seller/products/:id/edit"
             element={<RequireSeller><AddProductPage /></RequireSeller>} />
+
+          {/* Admin only */}
+          <Route path="/admin"
+            element={<RequireAdmin><AdminDashboardPage /></RequireAdmin>} />
 
           {/* 404 */}
           <Route path="*" element={
