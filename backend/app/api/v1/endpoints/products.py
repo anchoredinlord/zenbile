@@ -16,7 +16,8 @@ Seller routes (seller login required):
   DELETE /api/v1/products/{id}/images/{image_id} → delete an image
 
 Admin routes:
-  POST   /api/v1/products/categories  → create a category
+  POST   /api/v1/products/categories        → create a category
+  DELETE /api/v1/products/categories/{id}   → delete a category
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query
@@ -36,6 +37,7 @@ from app.services.product_service import (
     update_product, delete_product, save_product_image,
     delete_product_image, get_public_products,
     create_category, get_all_categories, get_seller_shop,
+    delete_category,
 )
 
 router = APIRouter()
@@ -66,6 +68,23 @@ def admin_create_category(
 ):
     """Admin only. Create a new product category."""
     return create_category(db, name=data.name, description=data.description)
+
+
+@router.delete(
+    "/categories/{category_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="[Admin] Delete a category",
+)
+def admin_delete_category(
+    category_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    """
+    Admin only. Delete a category.
+    Products in this category become uncategorized — they are not deleted.
+    """
+    delete_category(db, category_id)
 
 
 # ── Public product browsing ───────────────────────────────────────────────────

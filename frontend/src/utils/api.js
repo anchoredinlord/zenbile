@@ -52,20 +52,21 @@ export default api
 // Keeping them here makes it easy to find and update API calls.
 
 export const authAPI = {
-  register: (data) => api.post('/auth/register', data),
-  login:    (data) => api.post('/auth/login', data),
-  me:       ()     => api.get('/auth/me'),
+  register:      (data) => api.post('/auth/register', data),
+  login:         (data) => api.post('/auth/login', data),
+  me:            ()     => api.get('/auth/me'),
+  updateProfile: (data) => api.put('/auth/me', data),
 }
 
 export const productsAPI = {
-  list:        (params) => api.get('/products/', { params }),
-  get:         (id)     => api.get(`/products/${id}`),
-  categories:  ()       => api.get('/products/categories'),
+  list:        (params)   => api.get('/products/', { params }),
+  get:         (id)       => api.get(`/products/${id}`),
+  categories:  ()         => api.get('/products/categories'),
   // Seller
-  myProducts:  ()       => api.get('/products/my/products'),
-  create:      (data)   => api.post('/products/', data),
+  myProducts:  ()         => api.get('/products/my/products'),
+  create:      (data)     => api.post('/products/', data),
   update:      (id, data) => api.put(`/products/${id}`, data),
-  delete:      (id)     => api.delete(`/products/${id}`),
+  delete:      (id)       => api.delete(`/products/${id}`),
   uploadImage: (id, file) => {
     const form = new FormData()
     form.append('file', file)
@@ -73,26 +74,28 @@ export const productsAPI = {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
   },
+  deleteImage: (productId, imageId) =>
+    api.delete(`/products/${productId}/images/${imageId}`),
 }
 
 export const cartAPI = {
-  get:    ()         => api.get('/orders/cart'),
-  add:    (data)     => api.post('/orders/cart/items', data),
-  remove: (itemId)   => api.delete(`/orders/cart/items/${itemId}`),
+  get:    ()       => api.get('/orders/cart'),
+  add:    (data)   => api.post('/orders/cart/items', data),
+  remove: (itemId) => api.delete(`/orders/cart/items/${itemId}`),
 }
 
 export const ordersAPI = {
-  checkout: (data)      => api.post('/orders/checkout', data),
-  myOrders: ()          => api.get('/orders/my'),
-  getOrder: (reference) => api.get(`/orders/my/${reference}`),
+  checkout:    (data)      => api.post('/orders/checkout', data),
+  myOrders:    ()          => api.get('/orders/my'),
+  getOrder:    (reference) => api.get(`/orders/my/${reference}`),
   // Seller
-  sellerOrders:       ()          => api.get('/orders/seller'),
-  updateOrderStatus:  (id, data)  => api.put(`/orders/seller/${id}/status`, data),
+  sellerOrders:      ()         => api.get('/orders/seller'),
+  updateOrderStatus: (id, data) => api.put(`/orders/seller/${id}/status`, data),
 }
 
 export const sellersAPI = {
-  register:     (data) => api.post('/sellers/register', data),
-  myProfile:    ()     => api.get('/sellers/me'),
-  updateShop:   (data) => api.put('/sellers/me/shop', data),
-  publicShop:   (slug) => api.get(`/sellers/shops/${slug}`),
+  register:   (data) => api.post('/sellers/register', data),
+  myProfile:  ()     => api.get('/sellers/me'),
+  updateShop: (data) => api.put('/sellers/me/shop', data),
+  publicShop: (slug) => api.get(`/sellers/shops/${slug}`),
 }

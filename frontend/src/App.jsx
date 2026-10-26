@@ -3,19 +3,21 @@ import { useAuth } from './context/AuthContext'
 import Navbar from './components/Navbar'
 
 // Pages
-import HomePage             from './pages/HomePage'
-import ProductsPage         from './pages/ProductsPage'
-import ProductDetailPage    from './pages/ProductDetailPage'
-import CartPage             from './pages/CartPage'
-import CheckoutPage         from './pages/CheckoutPage'
+import HomePage              from './pages/HomePage'
+import ProductsPage          from './pages/ProductsPage'
+import ProductDetailPage     from './pages/ProductDetailPage'
+import CartPage              from './pages/CartPage'
+import CheckoutPage          from './pages/CheckoutPage'
 import OrderConfirmationPage from './pages/OrderConfirmationPage'
-import LoginPage            from './pages/LoginPage'
-import RegisterPage         from './pages/RegisterPage'
-import SellerRegisterPage   from './pages/SellerRegisterPage'
-import SellerDashboardPage  from './pages/SellerDashboardPage'
-import AddProductPage       from './pages/AddProductPage'
-import OrdersPage           from './pages/OrdersPage'
-import AdminDashboardPage  from './pages/AdminDashboardPage'
+import OrdersPage            from './pages/OrdersPage'
+import LoginPage             from './pages/LoginPage'
+import RegisterPage          from './pages/RegisterPage'
+import ProfilePage           from './pages/ProfilePage'
+import ShopPage              from './pages/ShopPage'
+import SellerRegisterPage    from './pages/SellerRegisterPage'
+import SellerDashboardPage   from './pages/SellerDashboardPage'
+import AddProductPage        from './pages/AddProductPage'
+import AdminDashboardPage    from './pages/AdminDashboardPage'
 
 // Route guards
 function RequireAuth({ children }) {
@@ -39,24 +41,30 @@ function RequireAdmin({ children }) {
   if (!isAdmin) return <Navigate to="/" replace />
   return children
 }
+
+export default function App() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-1">
         <Routes>
           {/* Public */}
-          <Route path="/"              element={<HomePage />} />
-          <Route path="/products"      element={<ProductsPage />} />
-          <Route path="/products/:id"  element={<ProductDetailPage />} />
-          <Route path="/login"         element={<LoginPage />} />
-          <Route path="/register"      element={<RegisterPage />} />
-          <Route path="/seller/register" element={<SellerRegisterPage />} />
+          <Route path="/"                   element={<HomePage />} />
+          <Route path="/products"           element={<ProductsPage />} />
+          <Route path="/products/:id"       element={<ProductDetailPage />} />
+          <Route path="/shops/:slug"        element={<ShopPage />} />
+          <Route path="/login"             element={<LoginPage />} />
+          <Route path="/register"          element={<RegisterPage />} />
+          <Route path="/seller/register"   element={<SellerRegisterPage />} />
 
           {/* Requires login */}
           <Route path="/cart"     element={<RequireAuth><CartPage /></RequireAuth>} />
           <Route path="/checkout" element={<RequireAuth><CheckoutPage /></RequireAuth>} />
-          <Route path="/orders" element={<RequireAuth><OrdersPage /></RequireAuth>} />
-          <Route path="/orders/:reference" element={<RequireAuth><OrderConfirmationPage /></RequireAuth>} />
+          <Route path="/orders"   element={<RequireAuth><OrdersPage /></RequireAuth>} />
+          <Route path="/orders/:reference"
+            element={<RequireAuth><OrderConfirmationPage /></RequireAuth>} />
+          <Route path="/profile"
+            element={<RequireAuth><ProfilePage /></RequireAuth>} />
 
           {/* Seller only */}
           <Route path="/seller/dashboard"
@@ -80,7 +88,6 @@ function RequireAdmin({ children }) {
         </Routes>
       </main>
 
-      {/* Footer */}
       <footer className="bg-white border-t border-gray-100 py-6 mt-10">
         <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-400">
           © 2026 Zenbil — Ethiopian Online Marketplace

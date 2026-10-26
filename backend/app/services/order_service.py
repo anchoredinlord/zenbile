@@ -354,16 +354,37 @@ def update_seller_order_status(
 
 def _update_parent_order_status(db: Session, order: Order) -> None:
     """
-    Automatically update the parent Order status based on seller order statuses.
-    Called whenever a seller updates their status.
+    Automatically update the parent Order status based on all seller order statuses.
+
+    Logic:
+    - All completed           → order completed
+    - All rejected/cancelled  → order cancelled
+    - All confirmed           → order confirmed
+    - Any ready               → order confirmed (seller is ready for pickup/delivery)
+    - Mix of confirmed+others → partial
+    - Otherwise               → pending
     """
-    statuses = {so.status for so in order.seller_orders}
+    statuses = [so.status for so in order.seller_orders]
+    status_set = set(statuses)
 
     if all(s == SellerOrderStatus.completed for s in statuses):
         order.status = OrderStatus.completed
-    elif all(s == SellerOrderStatus.rejected for s in statuses):
+
+    elif all(s in (SellerOrderStatus.rejected, SellerOrderStatus.cancelled) for s in statuses):
         order.status = OrderStatus.cancelled
-    elif SellerOrderStatus.completed in statuses or SellerOrderStatus.confirmed in statuses:
-        order.status = OrderStatus.partial
+
     elif all(s == SellerOrderStatus.confirmed for s in statuses):
         order.status = OrderStatus.confirmed
+
+    elif all(s in (SellerOrderStatus.confirmed, SellerOrderStatus.preparing,
+                   SellerOrderStatus.ready, SellerOrderStatus.completed) for s in statuses):
+        # All sellers have responded positively — show as confirmed overall
+        order.status = OrderStatus.confirmed
+
+    elif any(s in (SellerOrderStatus.confirmed, SellerOrderStatus.preparing,
+                   SellerOrderStatus.ready) for s in statuses):
+        # Some sellers confirmed, some still pending
+        order.status = OrderStatus.partial
+
+    else:
+        order.status = OrderStatus.pending

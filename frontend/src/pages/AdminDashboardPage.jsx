@@ -51,7 +51,6 @@ export default function AdminDashboardPage() {
     if (!newCat.trim()) return
     setCatLoading(true)
     try {
-      await productsAPI.create  // categories endpoint
       await api.post('/products/categories', { name: newCat.trim() })
       setNewCat('')
       await loadData()
@@ -59,6 +58,19 @@ export default function AdminDashboardPage() {
       alert(e.response?.data?.detail || 'Failed to create category')
     } finally {
       setCatLoading(false)
+    }
+  }
+
+  const deleteCategory = async (category) => {
+    const confirmed = window.confirm(
+      `Delete category "${category.name}"?\n\nProducts in this category will become uncategorized but will NOT be deleted.`
+    )
+    if (!confirmed) return
+    try {
+      await api.delete(`/products/categories/${category.id}`)
+      await loadData()
+    } catch (e) {
+      alert(e.response?.data?.detail || 'Failed to delete category')
     }
   }
 
@@ -221,7 +233,15 @@ export default function AdminDashboardPage() {
                     <span className="text-sm text-gray-400 ml-2">— {cat.description}</span>
                   )}
                 </div>
-                <span className="text-xs text-gray-400">/{cat.slug}</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-gray-400">/{cat.slug}</span>
+                  <button
+                    onClick={() => deleteCategory(cat)}
+                    className="text-xs text-red-400 hover:text-red-600 hover:bg-red-50
+                               px-2 py-1 rounded transition-colors">
+                    Delete
+                  </button>
+                </div>
               </div>
             ))}
           </div>

@@ -62,6 +62,23 @@ def get_category_by_id(db: Session, category_id: int) -> Category | None:
     return db.query(Category).filter(Category.id == category_id).first()
 
 
+def delete_category(db: Session, category_id: int) -> None:
+    """
+    Admin deletes a category.
+    Products in this category will have category_id set to NULL
+    because the foreign key is defined with ondelete='SET NULL'.
+    They remain visible but uncategorized.
+    """
+    category = get_category_by_id(db, category_id)
+    if not category:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Category not found",
+        )
+    db.delete(category)
+    db.commit()
+
+
 # ── Products ──────────────────────────────────────────────────────────────────
 
 def get_seller_shop(db: Session, user_id: int) -> Shop:
@@ -269,30 +286,29 @@ def get_public_products(
 ) -> dict:
     """
     Public product catalog with search and filtering.
-
-    Only returns active products from approved shops.
-    Customers never see drafts or archived products.
+    Only returns active products from APPROVED shops.
     """
-    query = db.query(Product).filter(
+    from app.models.shop import Shop, SellerProfile, SellerStatus
+
+    query = db.query(Product).join(
+        Shop, Product.shop_id == Shop.id
+    ).join(
+        SellerProfile, Shop.seller_id == SellerProfile.id
+    ).filter(
         Product.status == ProductStatus.active,
         Product.stock_quantity > 0,
+        Shop.is_active == True,
+        SellerProfile.status == SellerStatus.approved,
     )
 
-    # Filter by category
     if category_id:
         query = query.filter(Product.category_id == category_id)
-
-    # Filter by shop
     if shop_id:
         query = query.filter(Product.shop_id == shop_id)
-
-    # Price range filter (convert birr to cents)
     if min_price is not None:
         query = query.filter(Product.price_cents >= birr_to_cents(min_price))
     if max_price is not None:
         query = query.filter(Product.price_cents <= birr_to_cents(max_price))
-
-    # Search by product name or description
     if search:
         search_term = f"%{search.strip()}%"
         query = query.filter(
@@ -302,16 +318,8 @@ def get_public_products(
             )
         )
 
-    # Get total count before pagination
-    total = query.count()
-
-    # Apply pagination
-    offset = (page - 1) * page_size
+    total    = query.count()
+    offset   = (page - 1) * page_size
     products = query.order_by(Product.created_at.desc()).offset(offset).limit(page_size).all()
 
-    return {
-        "total": total,
-        "page": page,
-        "page_size": page_size,
-        "products": products,
-    }
+    return {"total": total, "page": page, "page_size": page_size, "products": products}

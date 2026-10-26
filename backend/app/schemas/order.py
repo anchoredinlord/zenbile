@@ -101,8 +101,9 @@ class SellerOrderOut(BaseModel):
 
     def model_post_init(self, __context):
         self.subtotal = self.subtotal_cents / 100
-        if self.shop_id and hasattr(self, '_shop'):
-            self.shop_name = getattr(self, '_shop').name if self._shop else ""
+        # Pull the shop name from the relationship if it loaded
+        if hasattr(self, 'shop') and self.shop:
+            self.shop_name = self.shop.name
 
 
 class OrderOut(BaseModel):
