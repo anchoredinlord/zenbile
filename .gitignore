@@ -1,0 +1,45 @@
+# ── Python / Backend ──────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+venv/
+env/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# NEVER commit these — they contain passwords and secret keys
+.env
+*.env
+
+# Uploaded product images — too large for git
+backend/uploads/
+
+# Test database files
+*.db
+test_*.db
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ── Node / Frontend ────────────────────────────────────────────────────────
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# ── OS files ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# ── VS Code ────────────────────────────────────────────────────────────────
+.vscode/
+
+# ── Logs ──────────────────────────────────────────────────────────────────
+*.log
+/tmp/
