@@ -4,6 +4,7 @@ import { productsAPI } from '../utils/api'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import LoadingSpinner from '../components/LoadingSpinner'
+import ReviewSection from '../components/ReviewSection'
 
 export default function ProductDetailPage() {
   const { id } = useParams()
@@ -155,6 +156,10 @@ export default function ProductDetailPage() {
           )}
         </div>
       </div>
+
+      {/* ── Reviews Section ── */}
+      <ReviewSection productId={id} />
+
     </div>
   )
 }

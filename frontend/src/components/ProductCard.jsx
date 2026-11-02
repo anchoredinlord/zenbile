@@ -78,6 +78,14 @@ export default function ProductCard({ product }) {
           <p className="text-xs text-gray-400 mb-1">Sizes: {product.available_sizes}</p>
         )}
 
+        {/* Average rating if exists */}
+        {product.avg_rating > 0 && (
+          <div className="flex items-center gap-1 mb-1">
+            <span className="text-yellow-400 text-xs">{'★'.repeat(Math.round(product.avg_rating))}{'☆'.repeat(5 - Math.round(product.avg_rating))}</span>
+            <span className="text-xs text-gray-400">({product.review_count})</span>
+          </div>
+        )}
+
         <div className="mt-auto pt-2">
           <div className="flex items-center justify-between mb-2">
             <span className="text-lg font-bold text-primary-500">

@@ -99,3 +99,10 @@ export const sellersAPI = {
   updateShop: (data) => api.put('/sellers/me/shop', data),
   publicShop: (slug) => api.get(`/sellers/shops/${slug}`),
 }
+
+export const reviewsAPI = {
+  getProductReviews: (productId)       => api.get(`/reviews/products/${productId}`),
+  canReview:         (productId)       => api.get(`/reviews/products/${productId}/can-review`),
+  submitReview:      (productId, data) => api.post(`/reviews/products/${productId}`, data),
+  deleteReview:      (reviewId)        => api.delete(`/reviews/${reviewId}`),
+}
