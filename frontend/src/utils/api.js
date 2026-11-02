@@ -94,10 +94,12 @@ export const ordersAPI = {
 }
 
 export const sellersAPI = {
-  register:   (data) => api.post('/sellers/register', data),
-  myProfile:  ()     => api.get('/sellers/me'),
-  updateShop: (data) => api.put('/sellers/me/shop', data),
-  publicShop: (slug) => api.get(`/sellers/shops/${slug}`),
+  register:     (data)      => api.post('/sellers/register', data),
+  myProfile:    ()          => api.get('/sellers/me'),
+  updateShop:   (data)      => api.put('/sellers/me/shop', data),
+  publicShop:   (slug)      => api.get(`/sellers/shops/${slug}`),
+  shopTypes:    ()          => api.get('/sellers/shop-types'),
+  byType:       (shopType)  => api.get(`/sellers/by-type/${shopType}`),
 }
 
 export const reviewsAPI = {

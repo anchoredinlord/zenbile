@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { sellersAPI } from '../utils/api'
 import { useAuth } from '../context/AuthContext'
@@ -6,13 +6,19 @@ import { useAuth } from '../context/AuthContext'
 export default function SellerRegisterPage() {
   const navigate = useNavigate()
   const { login } = useAuth()
-  const [error, setError]   = useState('')
+  const [error, setError]     = useState('')
   const [loading, setLoading] = useState(false)
-  const [done, setDone]     = useState(false)
+  const [done, setDone]       = useState(false)
+  const [shopTypes, setShopTypes] = useState([])
+
+  useEffect(() => {
+    sellersAPI.shopTypes().then(r => setShopTypes(r.data)).catch(() => {})
+  }, [])
 
   const [form, setForm] = useState({
     email: '', password: '', full_name: '', phone: '',
-    shop_name: '', shop_description: '', shop_location: '', shop_phone: '',
+    shop_name: '', shop_type: 'other', shop_description: '',
+    shop_location: '', shop_phone: '',
   })
 
   const update = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }))
@@ -23,7 +29,6 @@ export default function SellerRegisterPage() {
     setError('')
     try {
       await sellersAPI.register(form)
-      // Auto-login after registration
       await login(form.email, form.password)
       setDone(true)
     } catch (err) {
@@ -39,7 +44,7 @@ export default function SellerRegisterPage() {
       <h1 className="text-2xl font-bold text-gray-800 mb-2">Shop Registered!</h1>
       <p className="text-gray-500 mb-6">
         Your shop application has been submitted. Our admin will review and approve it shortly.
-        You'll be able to add products once approved.
+        You will be able to add products once approved.
       </p>
       <Link to="/seller/dashboard" className="btn-primary px-8 py-3">
         Go to Dashboard
@@ -52,7 +57,7 @@ export default function SellerRegisterPage() {
       <div className="text-center mb-8">
         <span className="text-4xl font-bold text-primary-500">ዘንቢል</span>
         <h1 className="text-xl font-semibold text-gray-800 mt-2">Register Your Shop</h1>
-        <p className="text-gray-400 text-sm mt-1">Start selling to thousands of customers</p>
+        <p className="text-gray-400 text-sm mt-1">Start selling to customers across Ethiopia</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
@@ -93,6 +98,25 @@ export default function SellerRegisterPage() {
               <input name="shop_name" value={form.shop_name} onChange={update}
                 required className="input-field" placeholder="e.g. Abebe Leather Goods" />
             </div>
+
+            {/* Shop Type — the new field */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Shop Type * <span className="text-gray-400 font-normal">— what do you sell?</span>
+              </label>
+              <select name="shop_type" value={form.shop_type} onChange={update}
+                required className="input-field">
+                {shopTypes.map(t => (
+                  <option key={t.value} value={t.value}>
+                    {t.icon} {t.label}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-400 mt-1">
+                This helps customers find your shop in the right category
+              </p>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
               <textarea name="shop_description" value={form.shop_description} onChange={update}

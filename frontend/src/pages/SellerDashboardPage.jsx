@@ -37,6 +37,7 @@ export default function SellerDashboardPage() {
   const [shopForm, setShopForm]       = useState({})
   const [shopSaving, setShopSaving]   = useState(false)
   const [shopSaved, setShopSaved]     = useState(false)
+  const [shopTypes, setShopTypes]     = useState([])
 
   // Image management
   const [expandedImages, setExpandedImages] = useState({}) // productId → true/false
@@ -55,6 +56,7 @@ export default function SellerDashboardPage() {
         description: profRes.data.shop?.description || '',
         phone:       profRes.data.shop?.phone        || '',
         location:    profRes.data.shop?.location     || '',
+        shop_type:   profRes.data.shop?.shop_type    || 'other',
       })
       setProducts(prodRes.data)
       setOrders(ordRes.data)
@@ -63,7 +65,10 @@ export default function SellerDashboardPage() {
     }
   }
 
-  useEffect(() => { loadAll() }, [])
+  useEffect(() => {
+    loadAll()
+    sellersAPI.shopTypes().then(r => setShopTypes(r.data)).catch(() => {})
+  }, [])
 
   // ── Order actions ──────────────────────────────────────────────────────────
 
@@ -189,6 +194,13 @@ export default function SellerDashboardPage() {
                 <h2 className="font-semibold text-gray-700 text-sm">Edit Shop Details</h2>
                 <input value={shopForm.name} onChange={e => setShopForm(f=>({...f,name:e.target.value}))}
                   className="input-field" placeholder="Shop name" required />
+                <select value={shopForm.shop_type}
+                  onChange={e => setShopForm(f=>({...f,shop_type:e.target.value}))}
+                  className="input-field">
+                  {shopTypes.map(t => (
+                    <option key={t.value} value={t.value}>{t.icon} {t.label}</option>
+                  ))}
+                </select>
                 <textarea value={shopForm.description} onChange={e => setShopForm(f=>({...f,description:e.target.value}))}
                   className="input-field" rows={2} placeholder="Shop description" />
                 <input value={shopForm.phone} onChange={e => setShopForm(f=>({...f,phone:e.target.value}))}

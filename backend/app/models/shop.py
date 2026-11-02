@@ -47,6 +47,38 @@ class SellerStatus(str, enum.Enum):
     suspended = "suspended"
 
 
+class ShopType(str, enum.Enum):
+    """
+    The type of business the seller runs.
+    Shown on the shop page and used to group products on the homepage.
+    """
+    electronics        = "electronics"
+    shoes_footwear     = "shoes_footwear"
+    clothing_fashion   = "clothing_fashion"
+    home_living        = "home_living"
+    jewelry_accessories = "jewelry_accessories"
+    beauty_personal    = "beauty_personal"
+    food_beverages     = "food_beverages"
+    books_education    = "books_education"
+    sports_fitness     = "sports_fitness"
+    other              = "other"
+
+
+# Human-readable labels and icons for each shop type
+SHOP_TYPE_LABELS = {
+    "electronics":         {"label": "Electronics",           "icon": "📱"},
+    "shoes_footwear":      {"label": "Shoes & Footwear",      "icon": "👟"},
+    "clothing_fashion":    {"label": "Clothing & Fashion",    "icon": "👗"},
+    "home_living":         {"label": "Home & Living",         "icon": "🏠"},
+    "jewelry_accessories": {"label": "Jewelry & Accessories", "icon": "💍"},
+    "beauty_personal":     {"label": "Beauty & Personal Care","icon": "💄"},
+    "food_beverages":      {"label": "Food & Beverages",      "icon": "🍎"},
+    "books_education":     {"label": "Books & Education",     "icon": "📚"},
+    "sports_fitness":      {"label": "Sports & Fitness",      "icon": "⚽"},
+    "other":               {"label": "Other",                 "icon": "🏪"},
+}
+
+
 class SellerProfile(Base):
     """
     Extra information about a user who has registered as a seller.
@@ -145,6 +177,14 @@ class Shop(Base):
 
     # Physical location or area (e.g. "Bole, Addis Ababa")
     location = Column(String(255), nullable=True)
+
+    # What type of business this shop is
+    # Used to group shops and products on the homepage
+    shop_type = Column(
+        SAEnum(ShopType, name="shop_type_enum"),
+        nullable=False,
+        default=ShopType.other,
+    )
 
     # Logo image filename (stored in uploads/)
     logo_url = Column(String(500), nullable=True)

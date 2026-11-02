@@ -19,7 +19,7 @@ from typing import Optional
 from app.db.session import get_db
 from app.core.deps import get_current_active_user, require_admin, require_seller
 from app.models.user import User
-from app.models.shop import SellerStatus
+from app.models.shop import SellerStatus, ShopType, SHOP_TYPE_LABELS
 from app.schemas.shop import (
     SellerRegisterRequest,
     SellerRegisterResponse,
@@ -27,6 +27,7 @@ from app.schemas.shop import (
     SellerReviewRequest,
     ShopOut,
     ShopUpdate,
+    ShopTypeOut,
 )
 from app.services.seller_service import (
     register_seller,
@@ -35,6 +36,7 @@ from app.services.seller_service import (
     review_seller,
     get_shop_by_slug,
     update_shop,
+    get_shops_by_type,
 )
 
 router = APIRouter()
@@ -151,6 +153,7 @@ def update_my_shop(
         description=data.description,
         phone=data.phone,
         location=data.location,
+        shop_type=data.shop_type,
     )
     return shop
 
@@ -203,3 +206,38 @@ def admin_review_seller(
         admin_user=current_user,
     )
     return seller
+
+
+# ── Shop type endpoints ────────────────────────────────────────────────────────
+
+@router.get(
+    "/shop-types",
+    response_model=list[ShopTypeOut],
+    summary="List all available shop types",
+)
+def list_shop_types():
+    """
+    Public. Returns all available shop types with their labels and icons.
+    Used to populate the shop type dropdown on the seller registration form.
+    """
+    return [
+        ShopTypeOut(value=k, label=v["label"], icon=v["icon"])
+        for k, v in SHOP_TYPE_LABELS.items()
+    ]
+
+
+@router.get(
+    "/by-type/{shop_type}",
+    response_model=list[ShopOut],
+    summary="Get all approved shops of a specific type",
+)
+def shops_by_type(
+    shop_type: ShopType,
+    db: Session = Depends(get_db),
+):
+    """
+    Public. Returns all active approved shops of the given type.
+    Used on the homepage to show shops grouped by category.
+    Example: GET /api/v1/sellers/by-type/shoes_footwear
+    """
+    return get_shops_by_type(db, shop_type)

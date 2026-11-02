@@ -57,6 +57,13 @@ export default function ShopPage() {
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl font-bold text-gray-800">{shop.name}</h1>
 
+            {shop.shop_type && (
+              <span className="inline-block mt-1 mb-2 text-xs font-medium
+                               bg-primary-50 text-primary-600 px-2.5 py-1 rounded-full capitalize">
+                {shop.shop_type.replace(/_/g, ' ')}
+              </span>
+            )}
+
             {shop.location && (
               <p className="text-gray-500 text-sm mt-1">📍 {shop.location}</p>
             )}

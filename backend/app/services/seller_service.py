@@ -86,6 +86,7 @@ def register_seller(db: Session, data: SellerRegisterRequest) -> SellerProfile:
         description=data.shop_description,
         phone=data.shop_phone or data.phone,
         location=data.shop_location,
+        shop_type=data.shop_type,
         is_active=False,  # Not visible until approved
     )
     db.add(shop)
@@ -174,6 +175,7 @@ def update_shop(
     description: str | None,
     phone: str | None,
     location: str | None,
+    shop_type=None,
 ) -> Shop:
     """Update a seller's own shop details."""
     if name is not None:
@@ -184,7 +186,24 @@ def update_shop(
         shop.phone = phone
     if location is not None:
         shop.location = location
+    if shop_type is not None:
+        shop.shop_type = shop_type
 
     db.commit()
     db.refresh(shop)
     return shop
+
+
+def get_shops_by_type(db: Session, shop_type) -> list[Shop]:
+    """
+    Get all active approved shops of a given type.
+    Used on the homepage to group shops by type.
+    """
+    from app.models.shop import SellerStatus
+    return db.query(Shop).join(
+        SellerProfile, Shop.seller_id == SellerProfile.id
+    ).filter(
+        Shop.shop_type   == shop_type,
+        Shop.is_active   == True,
+        SellerProfile.status == SellerStatus.approved,
+    ).all()

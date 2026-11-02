@@ -1,27 +1,43 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { productsAPI } from '../utils/api'
+import { productsAPI, sellersAPI } from '../utils/api'
 import { useAuth } from '../context/AuthContext'
 import ProductCard from '../components/ProductCard'
 import LoadingSpinner from '../components/LoadingSpinner'
 
 export default function HomePage() {
-  const [products, setProducts]     = useState([])
-  const [categories, setCategories] = useState([])
-  const [loading, setLoading]       = useState(true)
-  const [search, setSearch]         = useState('')
-  const navigate                    = useNavigate()
+  const [products, setProducts]         = useState([])
+  const [categories, setCategories]     = useState([])
+  const [shopTypes, setShopTypes]       = useState([])
+  const [groupedProducts, setGrouped]   = useState({})
+  const [loading, setLoading]           = useState(true)
+  const [search, setSearch]             = useState('')
+  const navigate                        = useNavigate()
   const { isLoggedIn, isSeller, isAdmin, user } = useAuth()
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [prodRes, catRes] = await Promise.all([
-          productsAPI.list({ page_size: 8 }),
+        const [prodRes, catRes, typesRes] = await Promise.all([
+          productsAPI.list({ page_size: 20 }),
           productsAPI.categories(),
+          sellersAPI.shopTypes(),
         ])
-        setProducts(prodRes.data.products || [])
+        const allProducts = prodRes.data.products || []
+        setProducts(allProducts)
         setCategories(catRes.data || [])
+        setShopTypes(typesRes.data || [])
+
+        // Group products by shop type using the shop data
+        // We fetch each shop's type from the product's shop_id
+        // For now group by category as proxy until we join shop_type in product listing
+        const grouped = {}
+        allProducts.forEach(p => {
+          const key = p.category_id || 'uncategorized'
+          if (!grouped[key]) grouped[key] = []
+          grouped[key].push(p)
+        })
+        setGrouped(grouped)
       } catch (e) {
         console.error(e)
       } finally {
@@ -191,9 +207,56 @@ export default function HomePage() {
               <p className="text-sm mt-1">Sellers are setting up their shops</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {products.map(p => <ProductCard key={p.id} product={p} />)}
-            </div>
+            <>
+              {/* Show products grouped by category */}
+              {categories.length > 0 ? (
+                categories.map(cat => {
+                  const catProducts = products.filter(p => p.category_id === cat.id)
+                  if (catProducts.length === 0) return null
+                  return (
+                    <div key={cat.id} className="mb-10">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-lg font-bold text-gray-700">
+                          {cat.name}
+                        </h3>
+                        <Link
+                          to={`/products?category_id=${cat.id}`}
+                          className="text-sm text-primary-500 hover:text-primary-600">
+                          See all →
+                        </Link>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {catProducts.slice(0, 4).map(p => (
+                          <ProductCard key={p.id} product={p} />
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {products.map(p => <ProductCard key={p.id} product={p} />)}
+                </div>
+              )}
+
+              {/* Uncategorized products */}
+              {(() => {
+                const uncategorized = products.filter(p => !p.category_id)
+                if (uncategorized.length === 0) return null
+                return (
+                  <div className="mb-10">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-lg font-bold text-gray-700">Other Products</h3>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {uncategorized.slice(0, 4).map(p => (
+                        <ProductCard key={p.id} product={p} />
+                      ))}
+                    </div>
+                  </div>
+                )
+              })()}
+            </>
           )}
         </section>
 

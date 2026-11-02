@@ -7,7 +7,7 @@ Pydantic schemas for seller registration and shop management.
 from pydantic import BaseModel, ConfigDict, field_validator
 from datetime import datetime
 from typing import Optional
-from app.models.shop import SellerStatus
+from app.models.shop import SellerStatus, ShopType
 
 
 # ── Seller Registration ───────────────────────────────────────────────────────
@@ -25,6 +25,7 @@ class SellerRegisterRequest(BaseModel):
 
     # Shop fields
     shop_name: str
+    shop_type: ShopType = ShopType.other      # What kind of shop is this?
     shop_description: Optional[str] = None
     shop_phone: Optional[str] = None
     shop_location: Optional[str] = None
@@ -58,6 +59,7 @@ class ShopOut(BaseModel):
     phone: Optional[str]
     location: Optional[str]
     logo_url: Optional[str]
+    shop_type: Optional[ShopType]
     is_active: bool
     created_at: datetime
 
@@ -70,6 +72,7 @@ class ShopUpdate(BaseModel):
     description: Optional[str] = None
     phone: Optional[str] = None
     location: Optional[str] = None
+    shop_type: Optional[ShopType] = None
 
 
 # ── Seller Profile responses ──────────────────────────────────────────────────
@@ -99,7 +102,6 @@ class SellerReviewRequest(BaseModel):
     @field_validator("status")
     @classmethod
     def must_be_decision(cls, v: SellerStatus) -> SellerStatus:
-        # Admin can only approve, reject, or suspend — not set back to pending
         if v == SellerStatus.pending:
             raise ValueError("Status cannot be set back to pending")
         return v
@@ -113,3 +115,12 @@ class SellerRegisterResponse(BaseModel):
     seller_id: int
     shop_slug: str
     status: SellerStatus
+
+
+# ── Shop type list endpoint response ─────────────────────────────────────────
+
+class ShopTypeOut(BaseModel):
+    """One shop type with label and icon — used on the frontend."""
+    value: str
+    label: str
+    icon: str
