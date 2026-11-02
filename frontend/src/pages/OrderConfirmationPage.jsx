@@ -140,13 +140,11 @@ export default function OrderConfirmationPage() {
                       {/* Step circle */}
                       <div className={`w-7 h-7 rounded-full flex items-center justify-center
                                        text-xs font-bold border-2 transition-all flex-shrink-0
-                        ${i < currentStep
+                        ${i <= currentStep
                           ? 'bg-green-500 border-green-500 text-white'
-                          : i === currentStep
-                            ? 'bg-primary-500 border-primary-500 text-white'
-                            : 'bg-white border-gray-200 text-gray-400'
+                          : 'bg-white border-gray-200 text-gray-400'
                         }`}>
-                        {i < currentStep ? '✓' : i + 1}
+                        {i <= currentStep ? '✓' : i + 1}
                       </div>
                       {/* Connector line */}
                       {i < SELLER_STEPS.length - 1 && (
