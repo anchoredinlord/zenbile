@@ -149,30 +149,9 @@ export default function HomePage() {
             <p className="text-primary-100 mb-8 text-base sm:text-lg max-w-md">
               Discover products from hundreds of verified local shops — clothing, shoes, electronics, and more.
             </p>
-
-            {/* Search bar */}
-            <form onSubmit={handleSearch}
-              className="flex bg-white rounded-2xl overflow-hidden shadow-xl max-w-lg">
-              <input
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                type="text"
-                placeholder="What are you looking for?"
-                className="flex-1 px-5 py-3.5 text-gray-800 text-sm outline-none"
-              />
-              <button type="submit"
-                className="bg-primary-500 hover:bg-primary-600 text-white px-6 font-semibold
-                           text-sm transition-colors flex items-center gap-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                Search
-              </button>
-            </form>
-          </div>
         </div>
-      </section>
+      </div>
+    </section>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
 
