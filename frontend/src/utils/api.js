@@ -56,6 +56,13 @@ export const authAPI = {
   login:         (data) => api.post('/auth/login', data),
   me:            ()     => api.get('/auth/me'),
   updateProfile: (data) => api.put('/auth/me', data),
+  uploadAvatar:  (file) => {
+    const form = new FormData()
+    form.append('file', file)
+    return api.post('/auth/me/avatar', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+  },
 }
 
 export const productsAPI = {

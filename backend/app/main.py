@@ -59,6 +59,7 @@ app.add_middleware(
 # In production you would use a proper object storage service (S3, R2, etc.)
 upload_dir = settings.UPLOAD_DIR
 os.makedirs(upload_dir, exist_ok=True)
+os.makedirs("uploads/profiles", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # ── Health check endpoint ───────────────────────────────────────────────────

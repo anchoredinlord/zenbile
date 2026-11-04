@@ -2,58 +2,33 @@
 app/services/user_service.py
 ────────────────────────────
 Business logic for user operations.
-
-WHY a service layer?
-  Endpoints (in app/api/) handle HTTP — reading request data, returning
-  responses, and raising HTTP errors.
-  Services handle BUSINESS LOGIC — database queries, validation rules,
-  and operations that don't belong to a single endpoint.
-
-  This keeps endpoints thin and logic reusable. For example, if we later
-  add a Telegram bot that also creates users, it calls the same service
-  function instead of duplicating logic.
 """
 
+import os
+import uuid
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, UploadFile
 
 from app.models.user import User, UserRole
 from app.schemas.user import UserCreate, UserUpdate
 from app.core.security import hash_password, verify_password, create_access_token
+from app.core.config import settings
+
+# Allowed image types for avatars
+ALLOWED_AVATAR_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
+AVATAR_UPLOAD_DIR = "uploads/profiles"
 
 
 def get_user_by_email(db: Session, email: str) -> User | None:
-    """
-    Look up a user by their email address.
-    Returns None if no user exists with that email.
-    """
     return db.query(User).filter(User.email == email.lower().strip()).first()
 
 
 def get_user_by_id(db: Session, user_id: int) -> User | None:
-    """Look up a user by their primary key."""
     return db.query(User).filter(User.id == user_id).first()
 
 
 def create_user(db: Session, data: UserCreate, role: UserRole = UserRole.customer) -> User:
-    """
-    Register a new user account.
-
-    Steps:
-    1. Check no existing account uses this email.
-    2. Hash the password (never store plain text).
-    3. Create the User row and commit it to the database.
-
-    Args:
-        db:   Database session.
-        data: Validated UserCreate schema from the request.
-        role: Defaults to customer. Pass UserRole.seller when a seller registers.
-
-    Raises:
-        HTTP 409 Conflict if the email is already registered.
-    """
-    # Normalize email to lowercase so "User@Email.com" and "user@email.com"
-    # are treated as the same address.
+    """Register a new user account."""
     email = data.email.lower().strip()
 
     existing = get_user_by_email(db, email)
@@ -70,71 +45,114 @@ def create_user(db: Session, data: UserCreate, role: UserRole = UserRole.custome
         phone=data.phone,
         role=role,
     )
-
     db.add(user)
     db.commit()
-    db.refresh(user)   # Reload from DB so id, created_at, etc. are populated
+    db.refresh(user)
     return user
 
 
 def authenticate_user(db: Session, email: str, password: str) -> User:
-    """
-    Verify credentials and return the user if they are correct.
-
-    We use the same error message whether the email or password is wrong.
-    This is intentional — telling an attacker "email not found" vs
-    "wrong password" reveals which emails are registered.
-
-    Raises:
-        HTTP 401 if credentials are invalid or account is inactive.
-    """
-    invalid_credentials = HTTPException(
+    """Verify credentials and return the user."""
+    invalid = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Incorrect email or password",
         headers={"WWW-Authenticate": "Bearer"},
     )
 
     user = get_user_by_email(db, email)
-    if not user:
-        raise invalid_credentials
-
-    if not verify_password(password, user.password_hash):
-        raise invalid_credentials
+    if not user or not verify_password(password, user.password_hash):
+        raise invalid
 
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="This account has been deactivated. Contact support.",
         )
-
     return user
 
 
 def login_user(db: Session, email: str, password: str) -> dict:
-    """
-    Authenticate a user and return a JWT access token.
-
-    Returns a dict with keys: access_token, token_type, user
-    """
+    """Authenticate and return a JWT token."""
     user = authenticate_user(db, email, password)
     token = create_access_token(subject=user.id)
-    return {
-        "access_token": token,
-        "token_type": "bearer",
-        "user": user,
-    }
+    return {"access_token": token, "token_type": "bearer", "user": user}
 
 
 def update_user_profile(db: Session, user: User, data: UserUpdate) -> User:
     """
-    Update a user's own profile fields.
-    Only updates fields that are actually provided (not None).
+    Update a user's own profile.
+    Supports changing name, phone, and email.
+    Email change checks that the new email is not taken by another account.
     """
     if data.full_name is not None:
         user.full_name = data.full_name.strip()
+
     if data.phone is not None:
         user.phone = data.phone
 
+    # Handle email change
+    if data.email is not None:
+        new_email = data.email.lower().strip()
+        if new_email != user.email:
+            # Check new email is not already used by someone else
+            existing = get_user_by_email(db, new_email)
+            if existing and existing.id != user.id:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="This email address is already used by another account",
+                )
+            user.email = new_email
+
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+async def upload_user_avatar(db: Session, user: User, file: UploadFile) -> User:
+    """
+    Upload a profile photo for a user.
+
+    - Validates file type (jpg, png, webp only)
+    - Validates file size (max 3MB)
+    - Saves with a unique UUID filename
+    - Deletes the old avatar if one existed
+    - Updates user.avatar_url in the database
+    """
+    # Validate extension
+    original_name = file.filename or "avatar"
+    ext = os.path.splitext(original_name)[1].lower()
+    if ext not in ALLOWED_AVATAR_EXTENSIONS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"File type not allowed. Use: jpg, png, or webp",
+        )
+
+    # Read and validate size (max 3MB)
+    content = await file.read()
+    max_size = 3 * 1024 * 1024  # 3MB
+    if len(content) > max_size:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Image too large. Maximum size is 3MB",
+        )
+
+    # Delete old avatar file from disk if it exists
+    if user.avatar_url:
+        old_filename = user.avatar_url.split("/")[-1]
+        old_path = os.path.join(AVATAR_UPLOAD_DIR, old_filename)
+        if os.path.exists(old_path):
+            os.remove(old_path)
+
+    # Save new file with UUID name
+    os.makedirs(AVATAR_UPLOAD_DIR, exist_ok=True)
+    filename = f"avatar_{user.id}_{uuid.uuid4().hex[:8]}{ext}"
+    filepath = os.path.join(AVATAR_UPLOAD_DIR, filename)
+
+    with open(filepath, "wb") as f:
+        f.write(content)
+
+    # Update database
+    user.avatar_url = f"/uploads/profiles/{filename}"
     db.commit()
     db.refresh(user)
     return user

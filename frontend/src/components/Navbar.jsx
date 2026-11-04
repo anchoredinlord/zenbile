@@ -122,9 +122,15 @@ export default function Navbar() {
 
                 {/* User avatar dropdown */}
                 <div className="flex items-center gap-2 pl-2 border-l border-gray-200 ml-1">
-                  <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center
+                  <div className="w-8 h-8 rounded-full overflow-hidden bg-primary-100
+                                  border border-primary-200 flex items-center
                                   justify-center text-primary-600 font-bold text-sm flex-shrink-0">
-                    {user?.full_name?.[0]?.toUpperCase()}
+                    {user?.avatar_url ? (
+                      <img src={user.avatar_url} alt={user.full_name}
+                        className="w-full h-full object-cover" />
+                    ) : (
+                      user?.full_name?.[0]?.toUpperCase()
+                    )}
                   </div>
                   <div className="hidden lg:block">
                     <p className="text-xs font-semibold text-gray-700 leading-none">
@@ -193,9 +199,15 @@ export default function Navbar() {
           {isLoggedIn ? (
             <>
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl mb-3">
-                <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center
-                                justify-center text-primary-600 font-bold">
-                  {user?.full_name?.[0]?.toUpperCase()}
+                <div className="w-10 h-10 rounded-full overflow-hidden bg-primary-100
+                                border border-primary-200 flex items-center
+                                justify-center text-primary-600 font-bold flex-shrink-0">
+                  {user?.avatar_url ? (
+                    <img src={user.avatar_url} alt={user.full_name}
+                      className="w-full h-full object-cover" />
+                  ) : (
+                    user?.full_name?.[0]?.toUpperCase()
+                  )}
                 </div>
                 <div>
                   <p className="font-semibold text-gray-800 text-sm">{user?.full_name}</p>

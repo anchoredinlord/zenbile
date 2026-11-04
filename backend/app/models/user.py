@@ -72,6 +72,10 @@ class User(Base):
     # Inactive users cannot log in. Admins can deactivate accounts.
     is_active = Column(Boolean, nullable=False, default=True)
 
+    # Profile photo — stored in uploads/profiles/
+    # Shows in navbar and profile page instead of the initial letter
+    avatar_url = Column(String(500), nullable=True)
+
     # Timestamps — stored in UTC.
     created_at = Column(
         DateTime(timezone=True),
