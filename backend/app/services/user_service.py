@@ -23,6 +23,10 @@ def get_user_by_email(db: Session, email: str) -> User | None:
     return db.query(User).filter(User.email == email.lower().strip()).first()
 
 
+def get_user_by_username(db: Session, username: str) -> User | None:
+    return db.query(User).filter(User.username == username.lower().strip()).first()
+
+
 def get_user_by_id(db: Session, user_id: int) -> User | None:
     return db.query(User).filter(User.id == user_id).first()
 
@@ -38,11 +42,23 @@ def create_user(db: Session, data: UserCreate, role: UserRole = UserRole.custome
             detail="An account with this email already exists",
         )
 
+    # Check username uniqueness if provided
+    username = None
+    if data.username:
+        username = data.username.lower().strip()
+        existing_username = get_user_by_username(db, username)
+        if existing_username:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="This username is already taken. Please choose another.",
+            )
+
     user = User(
         email=email,
         password_hash=hash_password(data.password),
         full_name=data.full_name.strip(),
         phone=data.phone,
+        username=username,
         role=role,
     )
     db.add(user)
@@ -51,15 +67,29 @@ def create_user(db: Session, data: UserCreate, role: UserRole = UserRole.custome
     return user
 
 
-def authenticate_user(db: Session, email: str, password: str) -> User:
-    """Verify credentials and return the user."""
+def authenticate_user(db: Session, login: str, password: str) -> User:
+    """
+    Verify credentials and return the user.
+
+    The login field can be either:
+    - An email address (contains @)
+    - A username (no @)
+
+    This makes it easier for local users who may forget their email
+    but remember their short username.
+    """
     invalid = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Incorrect email or password",
+        detail="Incorrect email/username or password",
         headers={"WWW-Authenticate": "Bearer"},
     )
 
-    user = get_user_by_email(db, email)
+    # Determine if login is email or username
+    if '@' in login:
+        user = get_user_by_email(db, login)
+    else:
+        user = get_user_by_username(db, login)
+
     if not user or not verify_password(password, user.password_hash):
         raise invalid
 
@@ -71,9 +101,9 @@ def authenticate_user(db: Session, email: str, password: str) -> User:
     return user
 
 
-def login_user(db: Session, email: str, password: str) -> dict:
+def login_user(db: Session, login: str, password: str) -> dict:
     """Authenticate and return a JWT token."""
-    user = authenticate_user(db, email, password)
+    user = authenticate_user(db, login, password)
     token = create_access_token(subject=user.id)
     return {"access_token": token, "token_type": "bearer", "user": user}
 
@@ -81,8 +111,7 @@ def login_user(db: Session, email: str, password: str) -> dict:
 def update_user_profile(db: Session, user: User, data: UserUpdate) -> User:
     """
     Update a user's own profile.
-    Supports changing name, phone, and email.
-    Email change checks that the new email is not taken by another account.
+    Supports changing name, phone, email, and username.
     """
     if data.full_name is not None:
         user.full_name = data.full_name.strip()
@@ -90,11 +119,9 @@ def update_user_profile(db: Session, user: User, data: UserUpdate) -> User:
     if data.phone is not None:
         user.phone = data.phone
 
-    # Handle email change
     if data.email is not None:
         new_email = data.email.lower().strip()
         if new_email != user.email:
-            # Check new email is not already used by someone else
             existing = get_user_by_email(db, new_email)
             if existing and existing.id != user.id:
                 raise HTTPException(
@@ -102,6 +129,17 @@ def update_user_profile(db: Session, user: User, data: UserUpdate) -> User:
                     detail="This email address is already used by another account",
                 )
             user.email = new_email
+
+    if data.username is not None:
+        new_username = data.username.lower().strip()
+        if new_username != user.username:
+            existing = get_user_by_username(db, new_username)
+            if existing and existing.id != user.id:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="This username is already taken. Please choose another.",
+                )
+            user.username = new_username
 
     db.commit()
     db.refresh(user)

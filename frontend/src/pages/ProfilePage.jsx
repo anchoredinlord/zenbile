@@ -14,6 +14,7 @@ export default function ProfilePage() {
     full_name: user?.full_name || '',
     phone:     user?.phone     || '',
     email:     user?.email     || '',
+    username:  user?.username  || '',
   })
 
   const update = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }))
@@ -29,6 +30,7 @@ export default function ProfilePage() {
         full_name: form.full_name,
         phone:     form.phone,
         email:     form.email !== user?.email ? form.email : undefined,
+        username:  form.username !== user?.username ? form.username : undefined,
       })
       // Update localStorage with new user data
       localStorage.setItem('zenbil_user', JSON.stringify(res.data))
@@ -179,7 +181,25 @@ export default function ProfilePage() {
               className="input-field" placeholder="09xxxxxxxx" />
           </div>
 
-          {/* Account info (read-only) */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              Username
+              <span className="ml-2 text-xs font-normal text-gray-400">
+                (optional — use this instead of email to log in)
+              </span>
+            </label>
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">@</span>
+              <input name="username" value={form.username} onChange={update}
+                className="input-field pl-8"
+                placeholder="e.g. tigist or abebe_shoes" />
+            </div>
+            {form.username && (
+              <p className="text-xs text-green-600 mt-1.5">
+                ✓ You can log in with <strong>{form.username}</strong> + your password
+              </p>
+            )}
+          </div>
           <div className="bg-gray-50 rounded-xl p-4 space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">Account type</span>

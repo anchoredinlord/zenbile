@@ -17,6 +17,7 @@ class UserCreate(BaseModel):
     password: str
     full_name: str
     phone: Optional[str] = None
+    username: Optional[str] = None   # Optional at registration
 
     @field_validator("password")
     @classmethod
@@ -33,28 +34,46 @@ class UserCreate(BaseModel):
             raise ValueError("Full name cannot be empty")
         return v
 
+    @field_validator("username")
+    @classmethod
+    def username_valid(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return v
+        v = v.strip().lower()
+        if len(v) < 3:
+            raise ValueError("Username must be at least 3 characters")
+        if len(v) > 30:
+            raise ValueError("Username cannot exceed 30 characters")
+        # Only letters, numbers, underscores, hyphens
+        import re
+        if not re.match(r'^[a-z0-9_\-]+$', v):
+            raise ValueError("Username can only contain letters, numbers, _ and -")
+        return v
 
-# ── Login ─────────────────────────────────────────────────────────────────────
+
+# ── Login — accepts email OR username ────────────────────────────────────────
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    """
+    Login with either email or username.
+    If the value contains @ it is treated as an email.
+    Otherwise it is treated as a username.
+    """
+    login: str    # email OR username
     password: str
 
 
 # ── Response schemas ──────────────────────────────────────────────────────────
 
 class UserOut(BaseModel):
-    """
-    User data returned in API responses.
-    password_hash is never included here.
-    """
     id: int
     email: str
     full_name: str
     phone: Optional[str]
     role: UserRole
     is_active: bool
-    avatar_url: Optional[str] = None   # Profile photo URL
+    avatar_url: Optional[str] = None
+    username: Optional[str] = None
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
@@ -63,19 +82,24 @@ class UserOut(BaseModel):
 # ── Profile update ────────────────────────────────────────────────────────────
 
 class UserUpdate(BaseModel):
-    """
-    Fields a user can update on their own profile.
-    All fields are optional — only provided fields are updated.
-    """
     full_name: Optional[str] = None
     phone:     Optional[str] = None
-    email:     Optional[EmailStr] = None   # Allow email change
+    email:     Optional[EmailStr] = None
+    username:  Optional[str] = None   # Allow setting/changing username
 
-    @field_validator("email")
+    @field_validator("username")
     @classmethod
-    def email_not_empty(cls, v):
-        if v and not v.strip():
-            raise ValueError("Email cannot be empty")
+    def username_valid(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return v
+        import re
+        v = v.strip().lower()
+        if len(v) < 3:
+            raise ValueError("Username must be at least 3 characters")
+        if len(v) > 30:
+            raise ValueError("Username cannot exceed 30 characters")
+        if not re.match(r'^[a-z0-9_\-]+$', v):
+            raise ValueError("Username can only contain letters, numbers, _ and -")
         return v
 
 

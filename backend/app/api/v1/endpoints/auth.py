@@ -41,11 +41,19 @@ def register(data: UserCreate, db: Session = Depends(get_db)):
 @router.post(
     "/login",
     response_model=Token,
-    summary="Log in and receive a JWT access token",
+    summary="Log in with email or username",
 )
 def login(data: UserLogin, db: Session = Depends(get_db)):
-    """Authenticate with email and password. Returns JWT token."""
-    return login_user(db=db, email=data.email, password=data.password)
+    """
+    Log in using either your email address or your username.
+
+    Examples:
+      { "login": "tigist@gmail.com", "password": "tigist1234" }
+      { "login": "tigist",           "password": "tigist1234" }
+
+    The system automatically detects whether you entered an email or username.
+    """
+    return login_user(db=db, login=data.login, password=data.password)
 
 
 @router.get(

@@ -6,7 +6,7 @@ import { authAPI } from '../utils/api'
 export default function RegisterPage() {
   const { login } = useAuth()
   const navigate  = useNavigate()
-  const [form, setForm]     = useState({ email: '', password: '', full_name: '', phone: '' })
+  const [form, setForm]     = useState({ email: '', password: '', full_name: '', phone: '', username: '' })
   const [error, setError]   = useState('')
   const [loading, setLoading] = useState(false)
   const [showPw, setShowPw] = useState(false)
@@ -19,8 +19,7 @@ export default function RegisterPage() {
     setError('')
     try {
       await authAPI.register(form)
-      await login(form.email, form.password)
-      navigate('/')
+      await login(form.email, form.password)      navigate('/')
     } catch (err) {
       setError(err.response?.data?.detail || 'Registration failed. Please try again.')
     } finally {
@@ -59,7 +58,23 @@ export default function RegisterPage() {
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                Phone Number <span className="text-gray-400 font-normal">(optional)</span>
+                Username
+                <span className="ml-2 text-xs font-normal text-gray-400">(optional — easier to login with)</span>
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">@</span>
+                <input name="username" value={form.username} onChange={update}
+                  className="input-field pl-8" placeholder="tigist or abebe_shoes"
+                  autoComplete="off" />
+              </div>
+              <p className="text-xs text-gray-400 mt-1.5">
+                Letters, numbers, _ and - only. Min 3 characters. You can use this instead of your email to log in.
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Phone Number
+                <span className="ml-2 text-xs font-normal text-gray-400">(optional)</span>
               </label>
               <input name="phone" value={form.phone} onChange={update}
                 className="input-field" placeholder="09xxxxxxxx" />

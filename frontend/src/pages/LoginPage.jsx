@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 export default function LoginPage() {
   const { login } = useAuth()
   const navigate  = useNavigate()
-  const [form, setForm]     = useState({ email: '', password: '' })
+  const [form, setForm]     = useState({ login: '', password: '' })
   const [error, setError]   = useState('')
   const [loading, setLoading] = useState(false)
   const [showPw, setShowPw] = useState(false)
@@ -17,12 +17,12 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
     try {
-      const user = await login(form.email, form.password)
+      const user = await login(form.login, form.password)
       if (user.role === 'seller') navigate('/seller/dashboard')
       else if (user.role === 'admin') navigate('/admin')
       else navigate('/')
     } catch (err) {
-      setError(err.response?.data?.detail || 'Incorrect email or password')
+      setError(err.response?.data?.detail || 'Incorrect email/username or password')
     } finally {
       setLoading(false)
     }
@@ -47,12 +47,15 @@ export default function LoginPage() {
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                Email Address
+                Email or Username
               </label>
-              <input name="email" type="email" value={form.email} onChange={update}
+              <input name="login" type="text" value={form.login} onChange={update}
                 required autoFocus
                 className="input-field"
-                placeholder="you@example.com" />
+                placeholder="tigist@gmail.com  or  tigist" />
+              <p className="text-xs text-gray-400 mt-1.5">
+                You can sign in with your email address or your username
+              </p>
             </div>
 
             <div>

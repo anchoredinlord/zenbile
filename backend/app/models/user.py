@@ -55,6 +55,11 @@ class User(Base):
     # We store only the bcrypt hash, never the real password.
     password_hash = Column(String(255), nullable=False)
 
+    # Short unique username — easier for local users to remember
+    # Example: "tigist" or "abebe_shoes"
+    # Optional for existing accounts, required for new ones going forward
+    username = Column(String(50), unique=True, index=True, nullable=True)
+
     # Display name shown on the storefront and dashboard.
     full_name = Column(String(150), nullable=False)
 

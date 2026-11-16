@@ -36,11 +36,9 @@ export function AuthProvider({ children }) {
     setLoading(false)
   }, [])
 
-  const login = async (email, password) => {
-    const response = await authAPI.login({ email, password })
+  const login = async (loginField, password) => {
+    const response = await authAPI.login({ login: loginField, password })
     const { access_token, user: userData } = response.data
-
-    // Save to localStorage so it persists across page refreshes
     localStorage.setItem('zenbil_token', access_token)
     localStorage.setItem('zenbil_user', JSON.stringify(userData))
     setUser(userData)
