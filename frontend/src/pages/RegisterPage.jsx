@@ -19,7 +19,8 @@ export default function RegisterPage() {
     setError('')
     try {
       await authAPI.register(form)
-      await login(form.email, form.password)      navigate('/')
+      await login(form.email, form.password)
+      navigate('/')
     } catch (err) {
       setError(err.response?.data?.detail || 'Registration failed. Please try again.')
     } finally {
