@@ -105,7 +105,7 @@ export default function HomePage() {
             <span className="text-3xl">🛍️</span>
             <h2 className="text-xl font-bold mt-2">Start Shopping</h2>
             <p className="text-primary-100 text-sm mt-1">
-              Create a free account and order from local shops across Ethiopia
+              Herrega bilisaa uumi, dukkaana naannoo irraa bitadhu
             </p>
           </div>
           <Link to="/register"
@@ -118,9 +118,9 @@ export default function HomePage() {
                         text-white p-7 flex flex-col justify-between min-h-40">
           <div>
             <span className="text-3xl">🏪</span>
-            <h2 className="text-xl font-bold mt-2">Sell on Zenbil</h2>
+            <h2 className="text-xl font-bold mt-2">Sell on Gabaa</h2>
             <p className="text-gray-300 text-sm mt-1">
-              Register your shop and reach thousands of customers across Ethiopia
+              Dukkaana kee galmeessi, maamiltoota hedduutti goor
             </p>
           </div>
           <Link to="/seller/register"
@@ -141,13 +141,13 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 py-12 sm:py-16">
           <div className="max-w-2xl">
             <p className="text-primary-100 text-sm font-medium mb-2 tracking-wide uppercase">
-              Ethiopia's Online Marketplace
+              Gedo Online Marketplace
             </p>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight mb-4">
               Shop from Local<br />Ethiopian Sellers
             </h1>
             <p className="text-primary-100 mb-8 text-base sm:text-lg max-w-md">
-              Discover products from hundreds of verified local shops — clothing, shoes, electronics, and more.
+              Discover products from verified local shops — clothing, shoes, electronics, and more.
             </p>
         </div>
       </div>

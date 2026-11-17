@@ -36,10 +36,10 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 bg-primary-500
                           rounded-2xl mb-4 shadow-lg">
-            <span className="text-white font-bold text-2xl">ዘ</span>
+            <span className="text-white font-bold text-2xl">ጋ</span>
           </div>
           <h1 className="text-2xl font-bold text-gray-800">Welcome back</h1>
-          <p className="text-gray-400 text-sm mt-1">Sign in to your Zenbil account</p>
+          <p className="text-gray-400 text-sm mt-1">Sign in to your Gabaa account</p>
         </div>
 
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">

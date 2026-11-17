@@ -25,7 +25,7 @@ export default function Navbar() {
 
       {/* ── Top bar ── */}
       <div className="bg-primary-500 text-white text-xs py-1.5 text-center hidden sm:block">
-        🛍️ Free shipping on orders over 500 ETB &nbsp;·&nbsp; Shop local Ethiopian products
+        🛍️ Gabaa — Gedo Online Marketplace &nbsp;·&nbsp; Shop local Ethiopian products
       </div>
 
       {/* ── Main navbar ── */}
@@ -35,11 +35,11 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 flex-shrink-0 mr-2">
             <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">ዘ</span>
+              <span className="text-white font-bold text-sm">ጋ</span>
             </div>
             <div className="hidden sm:block">
-              <span className="text-lg font-bold text-gray-800">Zenbil</span>
-              <span className="text-xs text-gray-400 block leading-none">ዘንቢል</span>
+              <span className="text-lg font-bold text-gray-800">Gabaa</span>
+              <span className="text-xs text-gray-400 block leading-none">ጋባ</span>
             </div>
           </Link>
 
