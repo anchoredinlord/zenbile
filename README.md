@@ -1,4 +1,4 @@
-# ዘንቢል Zenbil — Ethiopian Multi-Vendor Online Marketplace
+ree shipping on orders over 500 ETB  ·  Shop local Ethiopian products# ዘንቢል Zenbil — Ethiopian Multi-Vendor Online Marketplace
 
 [![Python](https://img.shields.io/badge/Python-3.14-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.159-green.svg)](https://fastapi.tiangolo.com)
@@ -15,6 +15,75 @@ A full-stack multi-vendor online marketplace where independent Ethiopian shops r
 ## Live Demo
 
 > Deployment coming soon — local setup instructions below.
+
+---
+
+## Quick Start: Run Both Servers Locally
+
+Already set up (dependencies installed, migrations applied, `.env` configured)? Launch the full stack in two terminals. Each server watches for file changes and auto-reloads on save, so you usually start them once and leave them running while you work.
+
+### Terminal 1 — Backend (FastAPI on port 8000)
+
+```bash
+cd backend
+venv/bin/uvicorn app.main:app --reload --port 8000
+```
+
+On success:
+
+```
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Application startup complete.
+```
+
+Confirm the API is healthy:
+
+```bash
+curl http://127.0.0.1:8000/api/health
+# {"status":"ok","app":"Gabaa","environment":"development"}
+```
+
+Interactive API documentation (available when `DEBUG=True`):
+
+- Swagger UI → http://localhost:8000/api/docs
+- ReDoc → http://localhost:8000/api/redoc
+
+> **Start from the `backend/` directory.** uvicorn resolves the app path `app.main:app` relative to the current working directory. Running it from the project root raises `ModuleNotFoundError: No module named 'app'` — see [Troubleshooting](#troubleshooting).
+
+### Terminal 2 — Frontend (Vite + React on port 5173)
+
+```bash
+cd frontend
+npm run dev
+```
+
+On success:
+
+```
+VITE v5.4.21  ready in 642 ms
+➜  Local:   http://localhost:5173/
+```
+
+Open http://localhost:5173 in your browser. The frontend calls the backend at `http://localhost:8000`; CORS is already enabled for `localhost:5173` and `127.0.0.1:5173` in `app/main.py`.
+
+### What to expect while developing
+
+- Both servers reload on save — no manual restart after edits.
+- The backend serves uploaded images at `http://localhost:8000/uploads/...` (mounted via `StaticFiles`).
+- Alembic migrations are **not** applied automatically at startup. After creating or editing a migration, run `alembic upgrade head` manually from the `backend/` directory.
+- New environment variables require a backend restart (the `--reload` watcher reloads code, not the process environment).
+
+### Running both servers from one shell (background mode)
+
+If you prefer a single terminal, run each server in the background and check their output as needed:
+
+```bash
+# From project root
+backend/venv/bin/uvicorn app.main:app --reload --port 8000 --app-dir backend &
+cd frontend && npm run dev &
+```
+
+> Note: `--app-dir backend` lets uvicorn find the `app` package when you start it from the project root.
 
 ---
 
@@ -328,6 +397,48 @@ See `backend/.env.example`. Never commit `.env` to git.
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | Token expiry (default: 60) |
 | `UPLOAD_DIR` | Directory for product images |
 | `MAX_UPLOAD_SIZE_MB` | Maximum upload size (default: 5) |
+
+---
+
+## Troubleshooting
+
+### `ModuleNotFoundError: No module named 'app'` when starting the backend
+
+uvicorn resolves the app path (`app.main:app`) relative to the current working directory. You must start the server from the `backend/` directory:
+
+```bash
+# Wrong — run from the project root
+venv/bin/uvicorn app.main:app --reload --port 8000   # → ModuleNotFoundError
+
+# Right — run from backend/
+cd backend
+venv/bin/uvicorn app.main:app --reload --port 8000
+```
+
+Alternatively, keep the project root as your working directory and point uvicorn at the backend with `--app-dir backend`.
+
+### Frontend cannot reach the backend
+
+1. Confirm the backend is running and healthy: `curl http://127.0.0.1:8000/api/health`.
+2. The backend allows CORS from `http://localhost:5173` and `http://127.0.0.1:5173`. If you serve the frontend from another origin, add it to the `origins` list in `app/main.py`.
+3. Check the browser console for CORS errors — they confirm the backend is reachable but rejecting the origin.
+
+### `uvicorn: command not found`
+
+Use the project's virtualenv directly (`backend/venv/bin/uvicorn ...`) or activate it first:
+
+```bash
+source backend/venv/bin/activate
+```
+
+### Port 8000 or 5173 already in use
+
+Either stop the process holding the port, or run on a different one. Remember that a non-default frontend port must be added to the backend CORS `origins` list:
+
+```bash
+venv/bin/uvicorn app.main:app --reload --port 8001   # backend
+npm run dev -- --port 5174                            # frontend
+```
 
 ---
 
